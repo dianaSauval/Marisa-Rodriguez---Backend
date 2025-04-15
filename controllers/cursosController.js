@@ -15,7 +15,7 @@ export const obtenerCursos = async (req, res) => {
   }
 };
 
-// 🎯 Obtener cursos por categoría
+// 🎯 Obtener cursos por categoría (admin)
 export const obtenerCursosPorCategoria = async (req, res) => {
   try {
     const { categoria } = req.params;
