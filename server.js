@@ -18,7 +18,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
-app.use(cors());
+app.use(cors({
+  origin: "https://marisarodriguezterapiasholisticas.com",
+}));
 app.use(express.json());
 
 // Rutas
