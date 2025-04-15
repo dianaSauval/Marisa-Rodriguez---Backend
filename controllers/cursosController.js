@@ -5,7 +5,7 @@ import Curso from "../models/Curso.js";
 import { eliminarImagenDeCloudinary } from "../config/cloudinary.js";
 
 
-// 🌀 Obtener todos los cursos
+// 🌀 Obtener todos los cursos (admin)
 export const obtenerCursos = async (req, res) => {
   try {
     const cursos = await Curso.find();
