@@ -18,9 +18,22 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middlewares
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://marisarodriguezterapiasholisticas.com"
+];
+
 app.use(cors({
-  origin: "https://marisarodriguezterapiasholisticas.com",
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("No autorizado por CORS"));
+    }
+  },
+  credentials: true, // si usás cookies o headers de autenticación
 }));
+
 app.use(express.json());
 
 // Rutas

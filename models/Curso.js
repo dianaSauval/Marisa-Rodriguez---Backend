@@ -17,7 +17,7 @@ const cursoSchema = new mongoose.Schema(
   {
     titulo: { type: String, required: true },
     descripcion: { type: String, required: true },
-    duracion: { type: Number, required: true },
+    duracion: { type: String, required: true },
     precioAr: { type: Number, required: true },
     precioUsd: { type: Number, required: true },
     contenido: [{ type: String }],
