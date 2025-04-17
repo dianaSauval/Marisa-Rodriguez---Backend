@@ -48,7 +48,8 @@ export const loginUsuario = async (req, res) => {
   const { email, password } = req.body;
   console.log("Llegó al backend:", email, password);
   try {
-    const usuario = await Usuario.findOne({ email });
+    const usuario = await Usuario.findOne({ email: email.toLowerCase().trim() });
+
     
     if (!usuario) return res.status(400).json({ mensaje: "email incorrecto" });
 

@@ -9,6 +9,7 @@ import usuariosRoutes from "./routes/usuarios.js";
 import clasesVivoRoutes from "./routes/clasesVivo.js";
 import authRoutes from "./routes/auth.js";
 import pagosRoutes from "./routes/pagos.js";
+import paypalRoutes from "./routes/paypal.js";
 
 
 
@@ -42,6 +43,8 @@ app.use("/api/usuarios", usuariosRoutes);
 app.use("/api/clases-vivo", clasesVivoRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/pagos", pagosRoutes);
+app.use('/api/paypal', paypalRoutes);
+
 
 
 

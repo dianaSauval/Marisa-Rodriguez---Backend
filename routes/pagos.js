@@ -2,8 +2,9 @@
 import mongoose from "mongoose";
 import express from "express";
 import mercadopago from "../config/mercadoPago.cjs";
-import { verificarToken } from "../middleware/authMiddleware.js";
 import Curso from "../models/Curso.js";
+import ClaseVivo from "../models/ClaseVivo.js";
+import { verificarToken } from "../middleware/authMiddleware.js";
 import Usuario from "../models/Usuario.js";
 
 
@@ -13,13 +14,34 @@ router.post("/crear-preferencia", verificarToken, async (req, res) => {
   const { cursos } = req.body;
 
   try {
-    const cursosData = await Curso.find({ _id: { $in: cursos } });
+    console.log("🟢 IDs recibidos:", cursos);
 
-    const items = cursosData.map((curso) => ({
+    const objectIds = cursos.map((id) => new mongoose.Types.ObjectId(id));
+
+    // Buscar en ambas colecciones
+    const cursosData = await Curso.find({ _id: { $in: objectIds } });
+    const clasesData = await ClaseVivo.find({ _id: { $in: objectIds } });
+
+    console.log("📘 Cursos encontrados:", cursosData);
+    console.log("📙 Clases encontradas:", clasesData);
+
+    const itemsCursos = cursosData.map((curso) => ({
       title: curso.titulo,
       unit_price: curso.precioAr,
       quantity: 1,
     }));
+
+    const itemsClases = clasesData.map((clase) => ({
+      title: clase.titulo,
+      unit_price: clase.precioAr,
+      quantity: 1,
+    }));
+
+    const items = [...itemsCursos, ...itemsClases];
+
+    if (items.length === 0) {
+      return res.status(400).json({ mensaje: "No se encontraron elementos válidos para el pago" });
+    }
 
     const preference = {
       items,
@@ -29,21 +51,27 @@ router.post("/crear-preferencia", verificarToken, async (req, res) => {
         pending: `${process.env.FRONTEND_URL}/pago-pendiente`,
       },
       auto_return: "approved",
-       // 👇 Agregamos esto
-  metadata: {
-    cursos: cursos.map((id) => id.toString()), // Array de strings
-  },
+      metadata: {
+        cursos: cursos.map((id) => id.toString()),
+      },
     };
+
+    console.log("📦 Preference final:", preference);
 
     const response = await mercadopago.preferences.create(preference);
     res.json({ id: response.body.id });
+
   } catch (error) {
     console.error("❌ Error al crear preferencia:", error);
     res.status(500).json({ mensaje: "Error al generar el pago" });
   }
 });
 
+
+
 // routes/pagos.js
+
+
 
 router.post("/confirmar-compra", verificarToken, async (req, res) => {
   const { cursos } = req.body;
@@ -51,31 +79,73 @@ router.post("/confirmar-compra", verificarToken, async (req, res) => {
 
   try {
     const usuario = await Usuario.findById(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    }
 
     if (!Array.isArray(cursos)) {
       return res.status(400).json({ mensaje: "Formato de cursos inválido" });
     }
 
-    // 👇 Convertimos a ObjectId para asegurarnos que son válidos
+    console.log("✅ Confirmación recibida del usuario:", req.usuario.email);
+    console.log("📦 Cursos a guardar:", cursos);
+    console.log("🧑‍💻 Usuario:", usuario._id);
+    console.log("🎓 Cursos ya comprados:", usuario.cursosComprados);
+    console.log("🎥 Clases ya compradas:", usuario.clasesCompradas);
+    console.log("📩 Body recibido:", req.body);
+
     const cursosObjectId = cursos.map((id) => new mongoose.Types.ObjectId(id));
 
-    // 📚 Buscamos en la base de datos solo los cursos válidos
     const cursosValidos = await Curso.find({ _id: { $in: cursosObjectId } });
+    const clasesValidas = await ClaseVivo.find({ _id: { $in: cursosObjectId } });
+
+    console.log("📚 Cursos válidos encontrados:", cursosValidos.map(c => c._id.toString()));
+    console.log("🌀 Clases válidas encontradas:", clasesValidas.map(c => c._id.toString()));
+
+    const cursosCompradosIds = usuario.cursosComprados.map(id => id.toString());
+    const clasesCompradasIds = usuario.clasesCompradas.map(id => id.toString());
 
     const nuevosCursos = cursosValidos
       .map((curso) => curso._id.toString())
-      .filter((id) => !usuario.cursosComprados.includes(id));
+      .filter((id) => !cursosCompradosIds.includes(id));
 
-    // 🧩 Agregamos solo los nuevos
-    usuario.cursosComprados.push(...nuevosCursos);
+    const nuevasClases = clasesValidas
+      .map((clase) => clase._id.toString())
+      .filter((id) => !clasesCompradasIds.includes(id));
+
+    if (nuevosCursos.length === 0 && nuevasClases.length === 0) {
+      return res.status(400).json({
+        mensaje: "Estos cursos o clases ya fueron comprados anteriormente.",
+        cursosYaComprados: cursosCompradosIds,
+        clasesYaCompradas: clasesCompradasIds,
+        cursosSolicitados: cursosObjectId.map(id => id.toString()),
+      });
+    }
+
+    // Guardar nuevos cursos y/o clases
+    if (nuevosCursos.length > 0) {
+      usuario.cursosComprados.push(...nuevosCursos);
+    }
+
+    if (nuevasClases.length > 0) {
+      usuario.clasesCompradas.push(...nuevasClases);
+    }
+
     await usuario.save();
 
-    res.json({ mensaje: "Cursos agregados con éxito" });
+    res.json({
+      mensaje: "Compra confirmada con éxito",
+      nuevosCursos,
+      nuevasClases,
+    });
+
   } catch (error) {
     console.error("❌ Error al confirmar compra:", error);
-    res.status(500).json({ mensaje: "Error al agregar los cursos" });
+    res.status(500).json({ mensaje: "Error al agregar los cursos o clases" });
   }
 });
+
+
 
 router.get("/preferencia/:id", verificarToken, async (req, res) => {
   try {
