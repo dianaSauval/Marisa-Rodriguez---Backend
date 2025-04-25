@@ -10,7 +10,7 @@ import Usuario from "../models/Usuario.js";
 
 const router = express.Router();
 
-router.post("/crear-preferencia", verificarToken, async (req, res) => {
+router.post("/crear-preferencia", async (req, res) => {
   const { cursos } = req.body;
 
   try {
