@@ -14,7 +14,7 @@ const environment = new paypal.core.SandboxEnvironment(
 // ⚠️ En producción, cambiar a:
 // const environment = new paypal.core.LiveEnvironment(...);
 
-const client = new paypal.core.PayPalHttpClient(environment);
+const client = new paypal.core.PayPalHttpClient(environment); 
 
 // Crear orden de PayPal
 router.post("/crear-orden", async (req, res) => {
