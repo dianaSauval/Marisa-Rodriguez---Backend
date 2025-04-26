@@ -7,10 +7,11 @@ dotenv.config();
 const router = express.Router();
 
 // Configuración del cliente PayPal
-const environment = new paypal.core.SandboxEnvironment(
+const environment = new paypal.core.LiveEnvironment(
   process.env.PAYPAL_CLIENT_ID,
   process.env.PAYPAL_CLIENT_SECRET
 );
+
 // ⚠️ En producción, cambiar a:
 // const environment = new paypal.core.LiveEnvironment(...);
 
