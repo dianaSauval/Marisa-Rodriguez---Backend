@@ -21,6 +21,9 @@ const client = new paypal.core.PayPalHttpClient(environment);
 router.post("/crear-orden", async (req, res) => {
   const { precio, descripcion, cursos } = req.body;
 
+  const descripcionCompra = cursos && Array.isArray(cursos)
+    ? `Compra: ${cursos.join(",")}`
+    : descripcion || "Compra sin cursos"; // ✅ si no hay cursos, usa la descripcion normal
 
   const request = new paypal.orders.OrdersCreateRequest();
   request.prefer("return=representation");
@@ -33,11 +36,10 @@ router.post("/crear-orden", async (req, res) => {
           currency_code: "USD",
           value: precio,
         },
-        description: `Compra: ${cursos.join(",")}`, // 👈 clave
+        description: descripcionCompra, // ✅ corregido
       },
     ],
   });
-  
 
   try {
     const order = await client.execute(request);
@@ -47,6 +49,7 @@ router.post("/crear-orden", async (req, res) => {
     res.status(500).json({ mensaje: "Error al generar la orden" });
   }
 });
+
 
 
 // Capturar una orden
