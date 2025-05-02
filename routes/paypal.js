@@ -1,21 +1,11 @@
 // routes/paypal.js
 import express from "express";
-import paypal from "@paypal/checkout-server-sdk";
+import client from "../config/paypalClient.js";
 import dotenv from "dotenv";
 dotenv.config();
 
 const router = express.Router();
 
-// Configuración del cliente PayPal
-const environment = new paypal.core.LiveEnvironment(
-  process.env.PAYPAL_CLIENT_ID,
-  process.env.PAYPAL_CLIENT_SECRET
-);
-
-// ⚠️ En producción, cambiar a:
-// const environment = new paypal.core.LiveEnvironment(...);
-
-const client = new paypal.core.PayPalHttpClient(environment); 
 
 // Crear orden de PayPal
 router.post("/crear-orden", async (req, res) => {
