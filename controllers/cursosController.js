@@ -70,6 +70,7 @@ export const editarCurso = async (req, res) => {
     if (req.usuario.rol !== "admin") {
       return res.status(403).json({ mensaje: "Acceso denegado" });
     }
+    console.log("📥 Datos recibidos en editarCurso:", req.body);
 
     const { id } = req.params;
     const cursoActualizado = await Curso.findByIdAndUpdate(id, req.body, {
