@@ -74,6 +74,8 @@ export const editarCurso = async (req, res) => {
     const { id } = req.params;
     const cursoActualizado = await Curso.findByIdAndUpdate(id, req.body, {
       new: true,
+      runValidators: true,
+      overwrite: false
     });
 
     if (!cursoActualizado) {
