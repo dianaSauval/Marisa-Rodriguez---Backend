@@ -22,7 +22,7 @@ const cursoSchema = new mongoose.Schema(
     precioUsd: { type: Number, required: true },
     contenido: [{ type: String }],
     video: { type: videoSchema, required: true },
-    pdf: { type: pdfSchema, required: false }, // 👉 Campo opcional para el PDF
+    pdfs: { type: [pdfSchema], default: [] },
     imagen: {
       url: { type: String },
       public_id: { type: String }
