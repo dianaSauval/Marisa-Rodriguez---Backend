@@ -24,8 +24,10 @@ const PORT = process.env.PORT || 5000;
 // Middlewares
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://marisarodriguezterapiasholisticas.com"
+  "https://marisarodriguezterapiasholisticas.com",
+  "https://www.marisarodriguezterapiasholisticas.com"
 ];
+
 
 app.use(cors({
   origin: function (origin, callback) {
