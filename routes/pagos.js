@@ -75,7 +75,11 @@ router.post("/crear-preferencia", async (req, res) => {
 
 router.post("/confirmar-compra", verificarToken, async (req, res) => {
   const { cursos } = req.body;
-  const usuarioId = req.usuario._id;
+  const usuarioId = req.usuario?.id || req.usuario?._id;
+
+  if (!usuarioId) {
+    return res.status(401).json({ mensaje: "Usuario no autenticado" });
+  }
 
   try {
     const usuario = await Usuario.findById(usuarioId);
@@ -122,7 +126,6 @@ router.post("/confirmar-compra", verificarToken, async (req, res) => {
       });
     }
 
-    // Guardar nuevos cursos y/o clases
     if (nuevosCursos.length > 0) {
       usuario.cursosComprados.push(...nuevosCursos);
     }
@@ -138,13 +141,11 @@ router.post("/confirmar-compra", verificarToken, async (req, res) => {
       nuevosCursos,
       nuevasClases,
     });
-
   } catch (error) {
     console.error("❌ Error al confirmar compra:", error);
     res.status(500).json({ mensaje: "Error al agregar los cursos o clases" });
   }
 });
-
 
 
 router.get("/preferencia/:id", verificarToken, async (req, res) => {
